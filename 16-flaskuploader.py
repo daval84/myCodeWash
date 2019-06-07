@@ -9,9 +9,14 @@ import json
 import smtplib
 from email.message import EmailMessage
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_file
 from werkzeug import secure_filename
 
+import graphing
+
+#import pandas as pd
+#import numpy as np
+#import matplotlib as mp
 
 app = Flask(__name__)
 
@@ -26,8 +31,16 @@ def uploader():
         mysteryfile.save(secure_filename(mysteryfile.filename))
         if "cap" in mysteryfile.filename:
             return redirect(url_for("sip", filetoparse = mysteryfile.filename))
+        elif "xlsx" in mysteryfile.filename:
+            return redirect(url_for("excel", filetoparse=mysteryfile.filename))
         else:
             return "That format is not yet supported. Please check back soon."
+
+
+@app.route("/excel/<filetoparse>")
+def excel(filetoparse):
+    return send_file(graphing.pygraph(filetoparse), mimetype='image/png')
+    
 
 @app.route("/sip/<filetoparse>")
 def sip(filetoparse):
@@ -48,12 +61,12 @@ def sip(filetoparse):
 def emailsender():
     msg = EmailMessage()
     msg['Subject'] = "This is Aleef subject line"
-    msg['From'] = "pythonstudent01mail.com"
+    msg['From'] = "pythonstudent01@mail.com"
     msg['To'] = "rzfeeserspam@gmail.com"
     msg.preamble = "Hey you just got a message from Aleef, Captain Jamerica"
 
     with open("/home/student/emailpassword.txt") as emailpass:
-        myemailpass = emailpass.read()
+        myemailpass = emailpass.read().rstrip('\n')
         
     mail = smtplib.SMTP("smtp.mail.com" , 587)
     mail.starttls()
